@@ -26,17 +26,23 @@ namespace LightSource
         public List<LightParticle> lightParticles;
         public List<GameObject> particleGameobjs;
 
+        public List<Ray> rayList;
+
+        public bool lightSwitch = false;
         const int ParticleCount = 100000;
         const float ParticleSpeed = 5;
         ParticleSystem.Particle[] particles = new ParticleSystem.Particle[ParticleCount];
 
         float totalTime = 0;
 
+
+
         // Start is called before the first frame update
         void Start()
         {
             lightParticles = new List<LightParticle>();
             particleGameobjs = new List<GameObject>();
+            rayList = new List<Ray>();
 
             sphere = Sphere.CreateSphere(sourceRadius, edgeCount, circleCount);
             var particleSystemMain = particleSystem.main;
@@ -50,18 +56,27 @@ namespace LightSource
         // Update is called once per frame
         void Update()
         {
-            if (Input.GetKeyDown(KeyCode.Space))
+            if (Input.GetKeyDown(KeyCode.Space)){
+
+                lightSwitch = !lightSwitch;
+            }
+
+
+            if(lightSwitch){
+            for (int i = 0; i < sphere.localPos.Count; i++)
             {
-                for (int i = 0; i < sphere.localPos.Count; i++)
-                {
                     var spawnPos = transform.TransformPoint(sphere.localPos[i]);
 
-                    var particle = Instantiate(particlePrefab, spawnPos, Quaternion.identity);
-                    var particleRigidbody = particle.GetComponent<Rigidbody>();
-                    particleRigidbody.velocity = sphere.normal[i] * ParticleSpeed;
-
-                    particleGameobjs.Add(particle);
-                }
+                    // var particle = Instantiate(particlePrefab, spawnPos, Quaternion.identity);
+                    // var particleRigidbody = particle.GetComponent<Rigidbody>();
+                    // particleRigidbody.velocity = sphere.normal[i] * ParticleSpeed;
+                    rayList.Add(new Ray(spawnPos,sphere.normal[i] * ParticleSpeed));
+                    if(Physics.Raycast(rayList[i],out RaycastHit hit)){
+                        Debug.DrawRay(spawnPos,sphere.normal[i] * ParticleSpeed,Color.magenta);
+                        continue;
+                    }
+                    Debug.DrawRay(spawnPos,sphere.normal[i] * ParticleSpeed,Color.white);
+                    // particleGameobjs.Add(particle);
             }
 
             totalTime += Time.deltaTime;
@@ -110,6 +125,14 @@ namespace LightSource
             // }
         }
 
+
+        
+        // void OnDrawGizmos() {
+        //     RaycastHit hitInfo;
+        //     Gizmos.color = Color.magenta;
+
+        //     if(Physics.Raycast)
+        // }
         void DrawParticle()
         {
             for (int i = 0; i < lightParticles.Count; i++)
@@ -118,4 +141,5 @@ namespace LightSource
             }
         }
     }
+}
 }
