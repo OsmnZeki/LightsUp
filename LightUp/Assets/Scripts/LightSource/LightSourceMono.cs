@@ -28,6 +28,8 @@ namespace LightSource
 
         public List<Ray> rayList;
 
+        public List<Vector3> hitPosList;
+
         public bool lightSwitch = false;
         const int ParticleCount = 100000;
         const float ParticleSpeed = 5;
@@ -43,6 +45,7 @@ namespace LightSource
             lightParticles = new List<LightParticle>();
             particleGameobjs = new List<GameObject>();
             rayList = new List<Ray>();
+            hitPosList = new List<Vector3>();
 
             sphere = Sphere.CreateSphere(sourceRadius, edgeCount, circleCount);
             var particleSystemMain = particleSystem.main;
@@ -72,11 +75,15 @@ namespace LightSource
                     // particleRigidbody.velocity = sphere.normal[i] * ParticleSpeed;
                     rayList.Add(new Ray(spawnPos,sphere.normal[i] * ParticleSpeed));
                     if(Physics.Raycast(rayList[i],out RaycastHit hit)){
+
                         Debug.DrawRay(spawnPos,sphere.normal[i] * ParticleSpeed,Color.magenta);
+                        hitPosList.Add(hit.point);
                         continue;
                     }
                     Debug.DrawRay(spawnPos,sphere.normal[i] * ParticleSpeed,Color.white);
                     // particleGameobjs.Add(particle);
+            }
+            rayList.Clear();
             }
 
             totalTime += Time.deltaTime;
@@ -133,6 +140,16 @@ namespace LightSource
 
         //     if(Physics.Raycast)
         // }
+
+        private void OnDrawGizmos() {
+            foreach (var point in hitPosList)
+            {
+                Gizmos.DrawSphere(point,0.1f);
+            }
+
+            hitPosList.Clear();
+            
+        }
         void DrawParticle()
         {
             for (int i = 0; i < lightParticles.Count; i++)
@@ -141,5 +158,4 @@ namespace LightSource
             }
         }
     }
-}
 }
